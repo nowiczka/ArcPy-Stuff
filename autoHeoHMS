@@ -1,0 +1,57 @@
+import arcpy 
+
+# import HEC-GeoHMS toolbox  
+arcpy.ImportToolbox(r"C:\Program Files (x86)\ArcGIS\Desktop10.1\ArcToolbox\Toolboxes\GeoHMS Tools.tbx")  
+
+# set input arguments  
+obra = 1
+puente = 1 # nr
+nr = 1
+nombre = "test"
+
+obra = __builtins__.str(obra)
+puente =__builtins__.str(puente)
+nr =__builtins__.str(nr)
+
+# path to slope and initial abstracion layers
+Slope = r"C:\Capas\wshslope"
+IAgrid = r"C:\_EMUASA\CPS_GIS\GEO_FILES\umbral_escorrentia_tcm30-176013\p0"
+
+# Set the workspace environment 
+arcpy.env.workspace = "C:\\"+nombre+"\\"+nombre+"\\"+nombre+".gdb"
+
+# projects layers
+Subbasin, River = "Subbasin"+puente, "River"+puente
+Cat,Strlnk,Str,Fac,Fdr,Fil,ProjectPoint,DEM = "Cat","StrLnk","Str","Fac","Fdr","Fil","ProjectPoint"+puente,"RawDEM"
+LongestFlowpath = "LongestFlowPath"+str(puente)
+BasinCentroidpath = "BasinCentroid"+str(puente)
+CentroidalLongestFlowpath = "CentroidalLongestFlowpath"+str(puente)
+ProjectPoint = "ProjectPoint"+puente
+
+"""  HecGeoHMS toolbox  """
+
+# HecGeoHMS: Characteristics
+arcpy.RiverLength_geohms(River) #@UndefinedVariable  
+arcpy.RiverSlope_geohms(DEM,River) #@UndefinedVariable  
+arcpy.BasinSlope_geohms(Slope,Subbasin)
+arcpy.LongestFlowpath_geohms(DEM,Fdr,Subbasin,LongestFlowpath)
+arcpy.BasinCentroid_geohms("Longest flow path",Subbasin,BasinCentroid,Fac,River,LongestFlowpath)
+arcpy.CentroidElevation_geohms(DEM,BasinCentroid)
+
+# there is an error when running CentroidalLongestFlowpath_geohms ....
+# arcpy.CentroidalLongestFlowpath_geohms(Subbasin,"BasinCentroid"+puente,"LongestFlowpath"+puente,CentroidalLongestFlowpath)
+
+# HecGeoHMS: parameters 
+arcpy.SelectHMSProcesses_geohms(Subbasin,River, "SCS","SCS","None","Muskingum")
+arcpy.RiverAutoName_geohms(River)
+arcpy.BasinAutoName_geohms(Subbasin)
+# subbasin parameters from raster
+
+""" """
+
+# create a subbasin KMZ layer
+arcpy.LayerToKML_conversion(Subbasin, "C:/Subbasin"+puente+".kmz")
+
+
+
+
